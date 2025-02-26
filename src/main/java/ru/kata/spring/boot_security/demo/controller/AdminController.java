@@ -1,18 +1,19 @@
 package ru.kata.spring.boot_security.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import ru.kata.spring.boot_security.demo.entity.Role;
 import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
+import java.util.List;
 
-import javax.validation.Valid;
-import java.security.Principal;
-
-@Controller
-@RequestMapping("/admin")
+@RestController
+@RequestMapping("/api/admin")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final UserService userService;
@@ -24,30 +25,43 @@ public class AdminController {
         this.roleService = roleService;
     }
 
-    @GetMapping
-    public String getUser(Principal principal, Model model) {
-        model.addAttribute("roles", roleService.getListRoles());
-        model.addAttribute("newUser", new User());
-        model.addAttribute("authUser", userService.findByUsername(principal.getName()));
-        model.addAttribute("users", userService.getAllUsers());
-        return "admin";
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return users != null && !users.isEmpty()
+                ? new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping
-    public String create(@ModelAttribute("newUser") @Valid User user) {
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
+        User user = userService.getUserById(id);
+        return user != null
+                ? new ResponseEntity<>(user, HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/roles")
+    public ResponseEntity<List<Role>> getAllRoles() {
+        List<Role> roleList = roleService.getListRoles();
+        return ResponseEntity.ok(roleList);
+    }
+
+    @PostMapping("/users")
+    public ResponseEntity<HttpStatus> saveNewUser(@RequestBody User user) {
         userService.saveUser(user);
-        return "redirect:/admin";
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PatchMapping("/user/{id}")
-    public String updateUser(@ModelAttribute("user") @Valid User user, @PathVariable("id") long id) {
-        userService.updateUser(id, user);
-        return "redirect:/admin";
+    @PutMapping("/users")
+    public ResponseEntity<HttpStatus> updateUser(@RequestBody User user) {
+        userService.updateUser(user);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable("id") long id) {
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") Long id) {
         userService.deleteUser(id);
-        return "redirect:/admin";
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 }

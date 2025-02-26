@@ -23,11 +23,6 @@ public class UserServiceImp implements UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Override
-    public void save(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-    }
 
     public User getUserById(Long id) {
         return userRepository.findById(id).orElse(null);
@@ -39,6 +34,12 @@ public class UserServiceImp implements UserService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Override
+    public void save(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userRepository.save(user);
     }
 
     @Transactional
@@ -59,16 +60,21 @@ public class UserServiceImp implements UserService {
     }
 
     @Transactional
-    public void updateUser(Long id, User user) {
-        User existingUser = userRepository.findById(id).orElse(null);
-        if (existingUser != null) {
-            existingUser.setUsername(user.getUsername());
-            existingUser.setEmail(user.getEmail());
-            existingUser.setRoles(user.getRoles());
-
-            if (!existingUser.getPassword().equals(user.getPassword())) {
-                existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
-            }
+    public void updateUser(User user) {
+        User existingUser = getUserById(user.getId());
+        if (existingUser.getPassword()
+                .equals(user.getPassword()) || "".equals(user.getPassword())) {
+            user.setPassword(existingUser.getPassword());
+        } else {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
+
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            user.setRoles(existingUser.getRoles());
+        } else {
+            user.setRoles(existingUser.getRoles());
+        }
+
+        userRepository.save(user);
     }
 }

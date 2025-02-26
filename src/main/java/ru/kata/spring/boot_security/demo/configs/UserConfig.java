@@ -7,7 +7,6 @@ import ru.kata.spring.boot_security.demo.entity.Role;
 import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
 import ru.kata.spring.boot_security.demo.service.RoleService;
-
 import javax.annotation.PostConstruct;
 import java.util.List;
 
@@ -16,13 +15,11 @@ public class UserConfig {
 
     private final UserService userService;
     private final RoleService roleService;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserConfig(UserService userService, RoleService roleService, PasswordEncoder passwordEncoder) {
+    public UserConfig(UserService userService, RoleService roleService) {
         this.userService = userService;
         this.roleService = roleService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @PostConstruct
