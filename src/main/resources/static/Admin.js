@@ -28,7 +28,6 @@ function getAllUsers() {
                         <td>${user.id}</td>
                         <td>${user.username}</td>
                         <td>${user.email}</td>
-                        <td>${user.password}</td>
                         <td>${user.roles.map(r => r.name.substring(5)).join(", ")}</td>
                         <td>
                             <button type="button" class="btn btn-info text-white" data-bs-toggle="modal"
@@ -158,7 +157,6 @@ function showModal(form, modal, id) {
         response.json().then(user => {
             $(`[name="id"]`,form).val(user.id)
             $(`[name="username"]`,form).val(user.username)
-            $(`[name="password"]`,form).val(user.password)
             $(`[name="email"]`,form).val(user.email)
         })
     })
